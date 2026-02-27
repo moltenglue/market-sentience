@@ -7,7 +7,7 @@
  */
 
 import { TrendingUp, TrendingDown, Minus, Activity, DollarSign, Percent } from 'lucide-react'
-import { parseMacroData, MacroIndicator } from '@/lib/markdownUtils'
+import { parseMacroData } from '@/lib/markdownUtils'
 
 interface MacroBarProps {
   data: string // Markdown content

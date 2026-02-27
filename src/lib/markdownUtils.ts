@@ -30,7 +30,6 @@ export interface MacroIndicator {
   isPositive?: boolean | null
   icon?: string
 }
-}
 
 export function parseMarketsData(markdown: string): Market[] {
   const markets: Market[] = []
