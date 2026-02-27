@@ -15,14 +15,6 @@ interface NewsProps {
   redditData: string
 }
 
-interface SentimentData {
-  title: string
-  summary?: string
-  link: string
-  category?: string
-  sentimentScore: number
-}
-
 export function News({ newsData, redditData }: NewsProps) {
   const [activeTab, setActiveTab] = useState<'news' | 'reddit'>('news')
   const articles = parseNewsData(newsData)

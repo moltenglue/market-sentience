@@ -27,7 +27,9 @@ export interface MacroIndicator {
   name: string
   value: string
   change?: string
-  isPositive?: boolean
+  isPositive?: boolean | null
+  icon?: string
+}
 }
 
 export function parseMarketsData(markdown: string): Market[] {
@@ -61,7 +63,7 @@ export function parseNewsData(markdown: string): NewsArticle[] {
   
   if (!markdown) return articles
 
-  const articleRegex = /###\s+(.+?)\n\s*\*\*Category:\*\*\s*(\w+)\s*\n(.+?)\n\s*\[Read more\]\((.+?)\)/gs
+  const articleRegex = /###\s+(.+?)\n\s*\*\*Category:\*\*\s*(\w+)\s*\n([\s\S]*?)\n\s*\[Read more\]\((.+?)\)/g
   let match
   
   while ((match = articleRegex.exec(markdown)) !== null) {
