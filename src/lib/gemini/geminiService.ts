@@ -10,15 +10,23 @@
 import { GoogleGenAI } from '@google/genai'
 import { getAllData } from '../scrapers'
 
-// Initialize Gemini client
-// API key should be set in environment variables
-const genAI = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY || ''
-})
-
 // Model configuration
 const MODEL_NAME = 'gemini-2.0-flash-exp'  // Using latest flash model for better performance
 const MAX_CONTEXT_LENGTH = 100000  // Maximum characters of context to include
+
+// Lazy initialization of Gemini client
+let genAI: GoogleGenAI | null = null
+
+const getGenAI = (): GoogleGenAI => {
+  if (!genAI) {
+    const apiKey = process.env.GEMINI_API_KEY
+    if (!apiKey) {
+      throw new Error('GEMINI_API_KEY environment variable is not set')
+    }
+    genAI = new GoogleGenAI({ apiKey })
+  }
+  return genAI
+}
 
 /**
  * System prompt that instructs Gemini how to use the context
@@ -102,7 +110,7 @@ export async function generateResponse(userMessage: string): Promise<string> {
     
     console.log('Sending request to Gemini...')
     
-    const response = await genAI.models.generateContent({
+    const response = await getGenAI().models.generateContent({
       model: MODEL_NAME,
       contents: [{ role: 'user', parts: [{ text: fullPrompt }] }],
       config: {
@@ -156,7 +164,7 @@ export async function* generateStreamingResponse(userMessage: string): AsyncGene
     
     console.log('Sending streaming request to Gemini...')
     
-    const response = await genAI.models.generateContentStream({
+    const response = await getGenAI().models.generateContentStream({
       model: MODEL_NAME,
       contents: [{ role: 'user', parts: [{ text: fullPrompt }] }],
       config: {
