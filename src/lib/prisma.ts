@@ -16,22 +16,16 @@ import { PrismaClient } from '@prisma/client'
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient }
 
-// Check if we have a database URL
-const hasDatabaseUrl = !!process.env.DATABASE_URL
-
-// Create a mock PrismaClient for build time if no database URL is set
+// Create PrismaClient instance
+// During build, DATABASE_URL may not be set, so we catch errors
 const createPrismaClient = () => {
-  if (!hasDatabaseUrl) {
-    console.warn('DATABASE_URL not set, using mock PrismaClient')
-    return new PrismaClient({
-      datasources: {
-        db: {
-          url: 'file:./placeholder.db'
-        }
-      }
-    })
+  try {
+    return new PrismaClient()
+  } catch (error) {
+    console.warn('Warning: Could not initialize PrismaClient:', error)
+    // Return a mock for build-time
+    return {} as PrismaClient
   }
-  return new PrismaClient()
 }
 
 export const prisma = globalForPrisma.prisma || createPrismaClient()
