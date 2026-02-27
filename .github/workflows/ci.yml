@@ -1,7 +1,7 @@
 # GitHub Actions CI/CD Pipeline
 # Comprehensive testing and deployment workflow
 
-name: CI/CD Pipeline
+name: CI Pipeline
 
 on:
   push:
@@ -12,16 +12,14 @@ on:
 env:
   NODE_VERSION: '20'
   DATABASE_URL: file:./prisma/data/test.db
-  GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
 jobs:
   # ==========================================
-  # Job 1: Setup and Install Dependencies
+  # Job 1: Lint and Type Check
   # ==========================================
-  setup:
+  lint:
+    name: 🔍 Lint & Type Check
     runs-on: ubuntu-latest
-    outputs:
-      node-version: ${{ steps.node-version.outputs.version }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -37,33 +35,6 @@ jobs:
 
       - name: Generate Prisma client
         run: npx prisma generate
-
-      - name: Cache node_modules
-        uses: actions/cache@v3
-        with:
-          path: |
-            node_modules
-            .next/cache
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-
-  # ==========================================
-  # Job 2: Lint and Type Check
-  # ==========================================
-  lint:
-    runs-on: ubuntu-latest
-    needs: setup
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
 
       - name: Run ESLint
         run: npm run lint
@@ -74,11 +45,12 @@ jobs:
         continue-on-error: true
 
   # ==========================================
-  # Job 3: Unit and Integration Tests
+  # Job 2: Unit and Integration Tests
   # ==========================================
   test:
+    name: 🧪 Run Tests
     runs-on: ubuntu-latest
-    needs: setup
+    needs: lint
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -95,25 +67,37 @@ jobs:
       - name: Generate Prisma client
         run: npx prisma generate
 
-      - name: Run database migrations
-        run: npx prisma migrate deploy
+      - name: Setup test database
+        run: |
+          mkdir -p prisma/data
+          npx prisma migrate deploy
 
       - name: Run Jest tests
-        run: npm test -- --coverage --coverageReporters=text-summary
+        run: npm test -- --coverage --coverageReporters=text-summary --coverageReporters=lcov
 
       - name: Upload coverage report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: coverage-report
-          path: coverage/
+          path: |
+            coverage/
+            junit.xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          file: ./coverage/lcov.info
+          fail_ci_if_error: false
 
   # ==========================================
-  # Job 4: Build Application
+  # Job 3: Build Application
   # ==========================================
   build:
+    name: 📦 Build Application
     runs-on: ubuntu-latest
-    needs: [lint, test]
+    needs: test
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -136,7 +120,7 @@ jobs:
           NEXT_TELEMETRY_DISABLED: 1
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-output
           path: |
@@ -144,11 +128,14 @@ jobs:
             public/
             prisma/
             package*.json
+            next.config.ts
+            tsconfig.json
 
   # ==========================================
-  # Job 5: E2E Tests with Agent-Browser
+  # Job 4: E2E Tests
   # ==========================================
   e2e:
+    name: 🎭 E2E Tests
     runs-on: ubuntu-latest
     needs: build
     steps:
@@ -162,46 +149,36 @@ jobs:
           cache: 'npm'
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-output
 
       - name: Install production dependencies
-        run: npm ci --only=production
+        run: npm ci
 
-      - name: Create test database
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Setup database
         run: |
           mkdir -p prisma/data
           npx prisma migrate deploy
 
-      - name: Start application in background
+      - name: Start application
         run: |
           npm start &
-          sleep 10
+          npx wait-on http://localhost:3000 --timeout 60000
         env:
           PORT: 3000
           NODE_ENV: production
-
-      - name: Wait for application to be ready
-        run: |
-          for i in {1..30}; do
-            if curl -f http://localhost:3000 > /dev/null 2>&1; then
-              echo "Application is ready!"
-              exit 0
-            fi
-            echo "Waiting for application... ($i/30)"
-            sleep 2
-          done
-          echo "Application failed to start"
-          exit 1
 
       - name: Run E2E tests
         run: node scripts/e2e-agent.js
         env:
           TEST_URL: http://localhost:3000
 
-      - name: Upload E2E test results
-        uses: actions/upload-artifact@v3
+      - name: Upload E2E results
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: e2e-results
@@ -210,9 +187,10 @@ jobs:
             logs/
 
   # ==========================================
-  # Job 6: Docker Build (optional)
+  # Job 5: Docker Build Test
   # ==========================================
-  docker:
+  docker-test:
+    name: 🐳 Docker Build Test
     runs-on: ubuntu-latest
     needs: [test, build]
     if: github.ref == 'refs/heads/main'
@@ -225,41 +203,49 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t sentiment-dash:latest .
+          docker build -t sentiment-dash:test .
           docker images
 
       - name: Test Docker container
         run: |
-          docker run -d --name test-container -p 3000:3000 sentiment-dash:latest
-          sleep 15
-          curl -f http://localhost:3000 || exit 1
+          docker run -d \
+            --name test-container \
+            -p 3000:3000 \
+            -e DATABASE_URL=file:./prisma/data/test.db \
+            sentiment-dash:test
+          
+          # Wait for container to be ready
+          sleep 20
+          
+          # Test health endpoint
+          curl -f http://localhost:3000/api/health || exit 1
+          
+          # Cleanup
           docker stop test-container
           docker rm test-container
 
   # ==========================================
-  # Job 7: Deploy (Production)
+  # Job 6: Security Scan
   # ==========================================
-  deploy:
+  security:
+    name: 🔒 Security Audit
     runs-on: ubuntu-latest
-    needs: [e2e, docker]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    environment: production
+    needs: lint
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Deploy to production
-        run: |
-          echo "🚀 Deploying to production..."
-          # Add your deployment commands here
-          # Examples:
-          # - Deploy to Vercel: npx vercel --prod --token=${{ secrets.VERCEL_TOKEN }}
-          # - Deploy to AWS: aws ecs update-service --cluster prod --service sentiment-dash --force-new-deployment
-          # - Deploy via SSH: ssh user@server 'cd /app && docker-compose pull && docker-compose up -d'
-          echo "✅ Deployment complete!"
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
 
-      - name: Post-deployment health check
-        run: |
-          echo "Checking production health..."
-          # curl -f https://your-production-url.com/api/health
-          echo "✅ Health check passed!"
+      - name: Run npm audit
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/node@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
