@@ -8,26 +8,19 @@
 
 import { useState } from 'react'
 import { Newspaper, MessageSquare, ChevronDown, ChevronUp, ExternalLink, ThumbsUp, MessageCircle } from 'lucide-react'
+import { parseNewsData, parseRedditData, NewsArticle, RedditPost } from '@/lib/markdownUtils'
 
 interface NewsProps {
   newsData: string
   redditData: string
 }
 
-interface NewsArticle {
+interface SentimentData {
   title: string
   summary?: string
   link: string
   category?: string
 }
-
-interface RedditPost {
-  title: string
-  selftext: string
-  score: number
-  numComments: number
-  url: string
-  sentiment: 'bullish' | 'bearish' | 'neutral'
   sentimentScore: number
 }
 
@@ -253,54 +246,4 @@ function RedditItem({ post }: { post: RedditPost }) {
   )
 }
 
-/**
- * Parse news markdown data
- */
-export function parseNewsData(markdown: string): NewsArticle[] {
-  const articles: NewsArticle[] = []
-  
-  if (!markdown) return articles
-
-  // Match article sections
-  const articleRegex = /### (.+?)\n\n(?:\*\*Category:\*\* (.+?)  \n)?(.+?)?\[Read more\]\((.+?)\)/g
-  let match
-
-  while ((match = articleRegex.exec(markdown)) !== null) {
-    articles.push({
-      title: match[1],
-      category: match[2],
-      summary: match[3]?.trim(),
-      link: match[4]
-    })
-  }
-
-  return articles
-}
-
-/**
- * Parse Reddit markdown data
- */
-export function parseRedditData(markdown: string): RedditPost[] {
-  const posts: RedditPost[] = []
-  
-  if (!markdown) return posts
-
-  // Match Reddit post sections
-  const postRegex = /\*\*(.+?)\*\*\n\n(?:(.+?)\n\n)?👍 (\d+) \| 💬 (\d+) comments \| Sentiment: ([\-\d]+)%\n\[View on Reddit\]\((.+?)\)/g
-  let match
-
-  while ((match = postRegex.exec(markdown)) !== null) {
-    const sentimentScore = parseInt(match[5]) / 100
-    posts.push({
-      title: match[1],
-      selftext: match[2] || '',
-      score: parseInt(match[3]),
-      numComments: parseInt(match[4]),
-      sentiment: sentimentScore > 0.2 ? 'bullish' : sentimentScore < -0.2 ? 'bearish' : 'neutral',
-      sentimentScore,
-      url: match[6]
-    })
-  }
-
-  return posts
-}
+export default News

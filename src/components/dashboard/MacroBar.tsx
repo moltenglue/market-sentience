@@ -7,22 +7,23 @@
  */
 
 import { TrendingUp, TrendingDown, Minus, Activity, DollarSign, Percent } from 'lucide-react'
-
-interface MacroIndicator {
-  name: string
-  value: string
-  change: string
-  isPositive: boolean | null
-  icon: 'trend' | 'dollar' | 'percent' | 'activity'
-}
+import { parseMacroData, MacroIndicator } from '@/lib/markdownUtils'
 
 interface MacroBarProps {
   data: string // Markdown content
 }
 
 export function MacroBar({ data }: MacroBarProps) {
-  // Parse markdown to extract key indicators
-  const indicators = parseMacroData(data)
+  const rawIndicators = parseMacroData(data)
+  
+  const indicators = rawIndicators.map(ind => {
+    let icon: 'trend' | 'dollar' | 'percent' | 'activity' = 'activity'
+    if (ind.name.includes('S&P') || ind.name.includes('500')) icon = 'trend'
+    else if (ind.name.includes('Bitcoin') || ind.name.includes('Crypto')) icon = 'dollar'
+    else if (ind.name.includes('Rate') || ind.name.includes('Yield')) icon = 'percent'
+    
+    return { ...ind, icon }
+  })
 
   const getIcon = (type: string) => {
     switch (type) {

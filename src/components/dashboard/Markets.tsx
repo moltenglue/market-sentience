@@ -8,17 +8,10 @@
 
 import { useState } from 'react'
 import { ChevronDown, ChevronUp, ExternalLink, BarChart3 } from 'lucide-react'
+import { parseMarketsData, Market } from '@/lib/markdownUtils'
 
 interface MarketsProps {
   data: string // Markdown content
-}
-
-interface Market {
-  question: string
-  probability: string
-  volume: string
-  liquidity: string
-  category: string
 }
 
 export function Markets({ data }: MarketsProps) {
@@ -143,32 +136,4 @@ function MarketRow({ market }: { market: Market }) {
   )
 }
 
-/**
- * Parse markdown data to extract markets
- */
-export function parseMarketsData(markdown: string): Market[] {
-  const markets: Market[] = []
-  
-  if (!markdown) return markets
-
-  // Extract table rows from markdown
-  const tableMatch = markdown.match(/\| Market \|.*?\n\|[-|]+\n([\s\S]*?)(?=\n\n|$)/)
-  if (!tableMatch) return markets
-
-  const rows = tableMatch[1].trim().split('\n')
-  
-  for (const row of rows) {
-    const cells = row.split('|').map(cell => cell.trim()).filter(Boolean)
-    if (cells.length >= 4) {
-      markets.push({
-        question: cells[0].replace(/\\\|/g, '|'),
-        probability: cells[1],
-        volume: cells[2],
-        liquidity: cells[3],
-        category: cells[4] || 'General'
-      })
-    }
-  }
-
-  return markets
-}
+export default Markets

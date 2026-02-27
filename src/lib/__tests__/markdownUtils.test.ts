@@ -4,9 +4,7 @@
  * Tests markdown parsing and formatting utilities.
  */
 
-import { parseMarketsData } from '@/components/dashboard/Markets'
-import { parseNewsData, parseRedditData } from '@/components/dashboard/News'
-import { parseMacroData } from '@/components/dashboard/MacroBar'
+import { parseMarketsData, parseNewsData, parseRedditData, parseMacroData } from '@/lib/markdownUtils'
 
 describe('Markdown Formatting', () => {
   describe('parseMarketsData', () => {
