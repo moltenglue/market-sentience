@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
  * 
  * Returns status of data sources without refreshing
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const { getDataSourcesStatus } = await import('@/lib/scrapers')
     const status = await getDataSourcesStatus()

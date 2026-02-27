@@ -18,7 +18,6 @@
 
 const { exec } = require('child_process')
 const util = require('util')
-const execPromise = util.promisify(exec)
 
 // Configuration
 const BASE_URL = process.env.TEST_URL || 'http://localhost:3000'
