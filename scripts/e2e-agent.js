@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 /* eslint-disable no-console */
 
 /**
@@ -16,8 +15,6 @@
  * Usage: node scripts/e2e-agent.js
  */
 
-const { exec } = require('child_process')
-const util = require('util')
 
 // Configuration
 const BASE_URL = process.env.TEST_URL || 'http://localhost:3000'

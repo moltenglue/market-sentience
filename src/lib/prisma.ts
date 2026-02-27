@@ -18,13 +18,7 @@ const globalForPrisma = global as unknown as { prisma: PrismaClient }
 
 // Create PrismaClient instance
 const createPrismaClient = () => {
-  return new PrismaClient({
-    datasources: {
-      db: {
-        url: process.env.DATABASE_URL
-      }
-    }
-  })
+  return new PrismaClient()
 }
 
 export const prisma = globalForPrisma.prisma || createPrismaClient()
