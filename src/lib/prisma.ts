@@ -16,7 +16,25 @@ import { PrismaClient } from '@prisma/client'
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient }
 
-export const prisma = globalForPrisma.prisma || new PrismaClient()
+// Check if we have a database URL
+const hasDatabaseUrl = !!process.env.DATABASE_URL
+
+// Create a mock PrismaClient for build time if no database URL is set
+const createPrismaClient = () => {
+  if (!hasDatabaseUrl) {
+    console.warn('DATABASE_URL not set, using mock PrismaClient')
+    return new PrismaClient({
+      datasources: {
+        db: {
+          url: 'file:./placeholder.db'
+        }
+      }
+    })
+  }
+  return new PrismaClient()
+}
+
+export const prisma = globalForPrisma.prisma || createPrismaClient()
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 

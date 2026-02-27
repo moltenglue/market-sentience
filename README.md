@@ -126,6 +126,95 @@ docker run -d \
   sentiment-dash:latest
 ```
 
+## Portainer Deployment
+
+Deploy to Portainer using the pre-built GHCR image:
+
+### Quick Deploy
+
+1. **Log in to Portainer** and navigate to your environment
+
+2. **Go to Stacks > Add Stack**
+
+3. **Name**: `market-sentience`
+
+4. **Web editor** - Paste this docker-compose:
+
+```yaml
+version: '3.8'
+
+services:
+  app:
+    image: ghcr.io/moltenglue/market-sentience:latest
+    container_name: market-sentience
+    ports:
+      - "3000:3000"
+    environment:
+      # Database
+      - DATABASE_URL=file:./prisma/data/prod.db
+      
+      # Required: Gemini API Key
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      
+      # Optional: FRED API Key  
+      - FRED_API_KEY=${FRED_API_KEY:-}
+      
+      # Optional: Reddit API
+      - REDDIT_CLIENT_ID=${REDDIT_CLIENT_ID:-}
+      - REDDIT_CLIENT_SECRET=${REDDIT_CLIENT_SECRET:-}
+      
+      # Configuration
+      - NODE_ENV=production
+      - NEXT_PUBLIC_APP_NAME=Market Sentiment Dashboard
+      - DEFAULT_CACHE_TTL_MINUTES=30
+      
+    volumes:
+      - sqlite-data:/app/prisma/data
+    restart: unless-stopped
+
+volumes:
+  sqlite-data:
+```
+
+5. **Environment Variables** - Click "Add environment variable" and add:
+   - `GEMINI_API_KEY` = your_gemini_api_key_here
+   - `FRED_API_KEY` = (optional)
+   - `REDDIT_CLIENT_ID` = (optional)
+   - `REDDIT_CLIENT_SECRET` = (optional)
+
+6. **Deploy the stack**
+
+### Advanced Environment Configuration
+
+```bash
+# Required for AI chat features
+GEMINI_API_KEY=your_gemini_api_key_here
+
+# Optional - Enhanced Data Sources
+FRED_API_KEY=your_fred_api_key_here
+REDDIT_CLIENT_ID=your_reddit_client_id
+REDDIT_CLIENT_SECRET=your_reddit_client_secret
+
+# Optional - Cache Configuration
+DEFAULT_CACHE_TTL_MINUTES=30
+MAX_CACHE_TTL_MINUTES=60
+MIN_CACHE_TTL_MINUTES=15
+
+# Optional - Application Settings
+NEXT_PUBLIC_APP_NAME=Market Sentiment Dashboard
+NEXT_PUBLIC_APP_VERSION=1.0.0
+NODE_ENV=production
+PORT=3000
+```
+
+### Updating
+
+To update to the latest version:
+1. Go to **Stacks > market-sentience**
+2. Click **Editor** tab
+3. Click **Update the stack** (Pull latest image version)
+4. Toggle **Re-pull image and redeploy** if needed
+
 ## Testing
 
 ### Unit & Integration Tests
