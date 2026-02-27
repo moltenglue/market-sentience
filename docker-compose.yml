@@ -1,0 +1,61 @@
+# Docker Compose Configuration
+# Development and production orchestration for the Market Sentiment Dashboard
+
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    container_name: sentiment-dash
+    ports:
+      - "3000:3000"
+    environment:
+      # Database
+      - DATABASE_URL=file:./prisma/data/prod.db
+      
+      # API Keys (set these in .env or use Docker secrets in production)
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - FRED_API_KEY=${FRED_API_KEY:-}
+      - REDDIT_CLIENT_ID=${REDDIT_CLIENT_ID:-}
+      - REDDIT_CLIENT_SECRET=${REDDIT_CLIENT_SECRET:-}
+      
+      # Configuration
+      - NODE_ENV=production
+      - NEXT_PUBLIC_APP_NAME=Market Sentiment Dashboard
+      - DEFAULT_CACHE_TTL_MINUTES=30
+      
+    volumes:
+      # Persistent SQLite database
+      - sqlite-data:/app/prisma/data
+      
+      # Optional: Mount logs directory
+      - ./logs:/app/logs
+    
+    restart: unless-stopped
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+volumes:
+  sqlite-data:
+    driver: local
+
+networks:
+  default:
+    name: sentiment-dash-network

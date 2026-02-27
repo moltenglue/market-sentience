@@ -1,0 +1,77 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Generator for Prisma Client
+generator client {
+  provider = "prisma-client-js"
+}
+
+// SQLite datasource for local development
+// In production, this can be replaced with PostgreSQL
+// The database file is stored in a Docker volume for persistence
+// Note: URL is configured in prisma.config.ts
+datasource db {
+  provider = "sqlite"
+}
+
+/**
+ * MarkdownCache - Stores scraped financial data as markdown
+ * 
+ * This table caches data from various financial sources:
+ * - Quotient Markets (prediction markets)
+ * - Sherwood News (financial news)
+ * - Reddit (sentiment analysis)
+ * - Yahoo Finance (market data)
+ * - FRED (macro indicators)
+ * 
+ * The TTL (Time To Live) is configurable per source (15-60 minutes)
+ */
+model MarkdownCache {
+  id              Int      @id @default(autoincrement())
+  sourceName      String   @unique // e.g., 'quotient-markets', 'sherwood-news', 'reddit-wsb', 'yahoo-finance', 'fred-macro'
+  sourceUrl       String   // The URL that was scraped
+  markdownContent String   // The extracted markdown content
+  ttlMinutes      Int      @default(30) // Cache TTL in minutes (15-60)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Index for efficient cache lookups
+  @@index([sourceName, updatedAt])
+}
+
+/**
+ * ChatHistory - Stores user queries and AI responses
+ * 
+ * Optional feature for persisting chat history
+ * Can be used to analyze user behavior and improve responses
+ */
+model ChatHistory {
+  id        Int      @id @default(autoincrement())
+  sessionId String   // Group messages by session
+  role      String   // 'user' or 'assistant'
+  content   String   // The message content
+  metadata  String?  // Optional JSON string for additional context (e.g., sources used)
+  createdAt DateTime @default(now())
+
+  // Index for efficient session-based queries
+  @@index([sessionId, createdAt])
+}
+
+/**
+ * DataSourceConfig - Configuration for each data source
+ * 
+ * Stores configuration parameters for each scraper/API integration
+ * Allows dynamic configuration without code changes
+ */
+model DataSourceConfig {
+  id          Int     @id @default(autoincrement())
+  sourceName  String  @unique
+  isEnabled   Boolean @default(true)
+  ttlMinutes  Int     @default(30)
+  configJson  String? // Source-specific configuration (URLs, API keys, etc.)
+  lastRunAt   DateTime?
+  lastStatus  String? // 'success', 'error', 'running'
+  lastError   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
