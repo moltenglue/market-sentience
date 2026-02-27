@@ -25,7 +25,7 @@ COPY prisma ./prisma/
 COPY prisma.config.ts ./
 
 # Install production dependencies
-RUN npm ci --only=production && npm cache clean --force
+RUN npm install --production && npm cache clean --force
 
 # ==========================================
 # Stage 2: Builder
@@ -43,7 +43,7 @@ COPY prisma ./prisma/
 COPY prisma.config.ts ./
 
 # Install all dependencies (including devDependencies)
-RUN npm ci
+RUN npm install
 
 # Copy source code
 COPY . .
