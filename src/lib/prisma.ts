@@ -17,15 +17,14 @@ import { PrismaClient } from '@prisma/client'
 const globalForPrisma = global as unknown as { prisma: PrismaClient }
 
 // Create PrismaClient instance
-// During build, DATABASE_URL may not be set, so we catch errors
 const createPrismaClient = () => {
-  try {
-    return new PrismaClient()
-  } catch (error) {
-    console.warn('Warning: Could not initialize PrismaClient:', error)
-    // Return a mock for build-time
-    return {} as PrismaClient
-  }
+  return new PrismaClient({
+    datasources: {
+      db: {
+        url: process.env.DATABASE_URL
+      }
+    }
+  })
 }
 
 export const prisma = globalForPrisma.prisma || createPrismaClient()
