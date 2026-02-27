@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
+/* eslint-disable no-console */
+
 /**
  * Agentic E2E Test Script
  * 

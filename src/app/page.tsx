@@ -37,6 +37,7 @@ export default function Dashboard() {
   // Fetch all data on mount
   useEffect(() => {
     fetchAllData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Auto-refresh stale data every 5 minutes
@@ -46,6 +47,7 @@ export default function Dashboard() {
     }, 5 * 60 * 1000) // 5 minutes
 
     return () => clearInterval(interval)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const fetchAllData = useCallback(async () => {

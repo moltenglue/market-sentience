@@ -146,7 +146,7 @@ function MarketRow({ market }: { market: Market }) {
 /**
  * Parse markdown data to extract markets
  */
-function parseMarketsData(markdown: string): Market[] {
+export function parseMarketsData(markdown: string): Market[] {
   const markets: Market[] = []
   
   if (!markdown) return markets

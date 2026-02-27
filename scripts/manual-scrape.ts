@@ -10,14 +10,15 @@
  *   npm run scrape -- --stats
  */
 
-const { PrismaClient } = require('@prisma/client')
+import { PrismaClient } from '@prisma/client'
+import { refreshData } from '../src/lib/scrapers'
 
 const prisma = new PrismaClient()
 
 // Parse command line arguments
 const args = process.argv.slice(2)
 const options = {
-  source: 'all',
+  source: 'all' as const,
   clearCache: false,
   stats: false,
   help: false
@@ -25,7 +26,7 @@ const options = {
 
 args.forEach(arg => {
   if (arg.startsWith('--source=')) {
-    options.source = arg.split('=')[1]
+    options.source = arg.split('=')[1] as typeof options.source
   } else if (arg === '--clear-cache') {
     options.clearCache = true
   } else if (arg === '--stats') {
@@ -59,7 +60,7 @@ Examples:
 }
 
 // Show cache statistics
-async function showStats() {
+async function showStats(): Promise<void> {
   console.log('\n📊 Cache Statistics\n')
   
   const totalEntries = await prisma.markdownCache.count()
@@ -91,19 +92,17 @@ async function showStats() {
 }
 
 // Clear cache
-async function clearCache() {
+async function clearCache(): Promise<void> {
   console.log('\n🗑️  Clearing cache...')
   await prisma.markdownCache.deleteMany()
   console.log('✅ Cache cleared\n')
 }
 
 // Run scraper
-async function runScraper() {
+async function runScraper(): Promise<void> {
   console.log(`\n🚀 Starting scraper for source: ${options.source}\n`)
   
   try {
-    // Dynamic import for ES modules
-    const { refreshData } = await import('./src/lib/scrapers/index.ts')
     const results = await refreshData(options.source)
     
     console.log('\n📈 Results:')
@@ -119,14 +118,15 @@ async function runScraper() {
     
     console.log('─'.repeat(60))
     console.log()
-  } catch (error) {
-    console.error('❌ Scraper error:', error.message)
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    console.error('❌ Scraper error:', errorMessage)
     process.exit(1)
   }
 }
 
 // Main execution
-async function main() {
+async function main(): Promise<void> {
   try {
     if (options.stats) {
       await showStats()
@@ -140,8 +140,9 @@ async function main() {
     await runScraper()
     await showStats()
     
-  } catch (error) {
-    console.error('Error:', error.message)
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    console.error('Error:', errorMessage)
     process.exit(1)
   } finally {
     await prisma.$disconnect()

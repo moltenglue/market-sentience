@@ -256,7 +256,7 @@ function RedditItem({ post }: { post: RedditPost }) {
 /**
  * Parse news markdown data
  */
-function parseNewsData(markdown: string): NewsArticle[] {
+export function parseNewsData(markdown: string): NewsArticle[] {
   const articles: NewsArticle[] = []
   
   if (!markdown) return articles
@@ -280,7 +280,7 @@ function parseNewsData(markdown: string): NewsArticle[] {
 /**
  * Parse Reddit markdown data
  */
-function parseRedditData(markdown: string): RedditPost[] {
+export function parseRedditData(markdown: string): RedditPost[] {
   const posts: RedditPost[] = []
   
   if (!markdown) return posts
