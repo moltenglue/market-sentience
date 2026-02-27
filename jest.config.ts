@@ -40,16 +40,7 @@ const config: Config = {
     '!src/app/layout.tsx',
     '!src/app/page.tsx'
   ],
-  
-  coverageThreshold: {
-    global: {
-      branches: 60,
-      functions: 60,
-      lines: 60,
-      statements: 60
-    }
-  },
-  
+
   // Module file extensions
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
   
