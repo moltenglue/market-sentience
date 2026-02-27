@@ -1,15 +1,13 @@
-/**
- * Dockerfile
- * 
- * Production-ready multi-stage Docker build for the Market Sentiment Dashboard.
- * 
- * Features:
- * - Multi-stage build for optimized image size
- * - SQLite database persistence via volume
- * - Non-root user for security
- * - Health checks
- * - Build-time Prisma client generation
- */
+# Dockerfile
+# 
+# Production-ready multi-stage Docker build for the Market Sentiment Dashboard.
+# 
+# Features:
+# - Multi-stage build for optimized image size
+# - SQLite database persistence via volume
+# - Non-root user for security
+# - Health checks
+# - Build-time Prisma client generation
 
 # ==========================================
 # Stage 1: Dependencies
