@@ -88,7 +88,7 @@ export function MacroBar({ data }: MacroBarProps) {
 /**
  * Parse markdown data to extract key macro indicators
  */
-function parseMacroData(markdown: string): MacroIndicator[] {
+export function parseMacroData(markdown: string): MacroIndicator[] {
   const indicators: MacroIndicator[] = []
   
   if (!markdown) return indicators

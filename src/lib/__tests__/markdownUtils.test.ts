@@ -176,7 +176,7 @@ Selling everything, bear market incoming
       expect(indicators.length).toBeGreaterThan(0)
       
       // Check for S&P 500
-      const sp500 = indicators.find(i => i.name === 'S&P 500')
+      const sp500 = indicators.find((i: { name: string }) => i.name === 'S&P 500')
       expect(sp500).toBeTruthy()
       expect(sp500?.value).toBe('4500.00')
       expect(sp500?.isPositive).toBe(true)

@@ -5,7 +5,7 @@
  * All data sources use this service to store and retrieve cached content.
  */
 
-import { prisma } from './prisma'
+import { prisma } from '@/lib/prisma'
 
 export interface CacheEntry {
   sourceName: string
@@ -126,7 +126,7 @@ export async function getAllCacheEntries(): Promise<CacheEntry[]> {
       orderBy: { updatedAt: 'desc' }
     })
 
-    return entries.map(entry => ({
+    return entries.map((entry: CacheEntry) => ({
       sourceName: entry.sourceName,
       sourceUrl: entry.sourceUrl,
       markdownContent: entry.markdownContent,

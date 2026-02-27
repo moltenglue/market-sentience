@@ -56,7 +56,8 @@ async function fetchQuotes(symbols: { symbol: string; name: string }[]): Promise
   
   for (const { symbol, name } of symbols) {
     try {
-      const quote = await yahooFinance.quote(symbol)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const quote: any = await yahooFinance.quote(symbol)
       
       results.push({
         symbol,
