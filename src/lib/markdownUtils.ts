@@ -107,8 +107,6 @@ export function parseMacroData(markdown: string): MacroIndicator[] {
   
   if (!markdown) return indicators
 
-  const tableRegex = /\|([^|]+)\|([^|]+)\|([^|]+)\|([^|]+)\|/g
-  let match
   const lines = markdown.split('\n')
   
   for (const line of lines) {

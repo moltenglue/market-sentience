@@ -20,7 +20,6 @@ interface SentimentData {
   summary?: string
   link: string
   category?: string
-}
   sentimentScore: number
 }
 
