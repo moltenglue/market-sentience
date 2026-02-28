@@ -157,7 +157,7 @@ jobs:
       - name: Setup database
         run: |
           mkdir -p prisma/data
-          npx prisma migrate deploy
+          touch prisma/data/test.db
         env:
           DATABASE_URL: file:./prisma/data/test.db
 
