@@ -149,26 +149,24 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-output
-          path: build-artifacts
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
-      - name: Install production dependencies
-        run: npm install --production
+      - name: Install dependencies
+        run: npm install
 
-      - name: Restore build artifacts
-        run: |
-          cp -r build-artifacts/.next . 2>/dev/null || true
-          cp -r build-artifacts/public . 2>/dev/null || true
-          cp -r build-artifacts/prisma . 2>/dev/null || true
+      - name: Generate Prisma client
+        run: npx prisma generate
+        env:
+          DATABASE_URL: file:./prisma/data/test.db
+
+      - name: Build application
+        run: npm run build
+        env:
+          DATABASE_URL: file:./prisma/data/test.db
 
       - name: Setup database
         run: |
