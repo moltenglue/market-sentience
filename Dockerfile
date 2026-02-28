@@ -45,14 +45,17 @@ COPY prisma.config.ts ./
 # Install all dependencies (including devDependencies)
 RUN npm install
 
+# Set DATABASE_URL for Prisma build
+ENV DATABASE_URL="file:./prisma/data/dev.db"
+
 # Copy source code
 COPY . .
 
 # Generate Prisma client
-RUN DATABASE_URL="file:./prisma/data/dev.db" npx prisma generate
+RUN npx prisma generate
 
 # Build the Next.js application
-RUN DATABASE_URL="file:./prisma/data/dev.db" npm run build
+RUN npm run build
 
 # ==========================================
 # Stage 3: Runner (Production)
