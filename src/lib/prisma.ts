@@ -9,15 +9,17 @@
  */
 
 import { PrismaClient } from '@prisma/client'
-
-// PrismaClient is attached to the `global` object in development to prevent
-// exhausting your database connection limit during hot reloading.
-// Learn more: https://pris.ly/d/help/next-js-best-practices
+import { PrismaLibSql } from '@prisma/adapter-libsql'
+import { createClient } from '@libsql/client'
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient }
 
 const createPrismaClient = () => {
-  return new PrismaClient()
+  const libsql = createClient({
+    url: process.env.DATABASE_URL || 'file:./prisma/data/dev.db',
+  })
+  const adapter = new PrismaLibSql(libsql)
+  return new PrismaClient({ adapter })
 }
 
 export const prisma = globalForPrisma.prisma || createPrismaClient()
