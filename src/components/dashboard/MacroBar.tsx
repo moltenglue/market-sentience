@@ -69,7 +69,7 @@ export function MacroBar({ data }: MacroBarProps) {
               </div>
               <div className="text-xl font-bold">{indicator.value}</div>
               <div className="flex items-center gap-1 text-sm">
-                {getTrendIcon(indicator.isPositive)}
+                {getTrendIcon(indicator.isPositive ?? null)}
                 <span className={indicator.isPositive === null ? 'text-gray-300' : indicator.isPositive ? 'text-green-300' : 'text-red-300'}>
                   {indicator.change}
                 </span>
