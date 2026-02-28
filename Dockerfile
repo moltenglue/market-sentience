@@ -49,10 +49,10 @@ RUN npm install
 COPY . .
 
 # Generate Prisma client
-RUN npx prisma generate
+RUN DATABASE_URL="file:./prisma/data/dev.db" npx prisma generate
 
 # Build the Next.js application
-RUN npm run build
+RUN DATABASE_URL="file:./prisma/data/dev.db" npm run build
 
 # ==========================================
 # Stage 3: Runner (Production)
