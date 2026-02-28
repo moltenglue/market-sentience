@@ -155,12 +155,6 @@ jobs:
           name: build-output
           path: build-artifacts
 
-      - name: Restore build artifacts
-        run: |
-          mv build-artifacts/.next . 2>/dev/null || true
-          mv build-artifacts/public . 2>/dev/null || true
-          mv build-artifacts/prisma . 2>/dev/null || true
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -169,6 +163,12 @@ jobs:
 
       - name: Install production dependencies
         run: npm install --production
+
+      - name: Restore build artifacts
+        run: |
+          cp -r build-artifacts/.next . 2>/dev/null || true
+          cp -r build-artifacts/public . 2>/dev/null || true
+          cp -r build-artifacts/prisma . 2>/dev/null || true
 
       - name: Setup database
         run: |
