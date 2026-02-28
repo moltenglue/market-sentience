@@ -22,6 +22,22 @@ jest.mock('next/navigation', () => ({
   usePathname: () => '/'
 }))
 
+// Mock Prisma Client
+jest.mock('@/lib/prisma', () => ({
+  prisma: {
+    markdownCache: {
+      findUnique: jest.fn(),
+      findMany: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+      deleteMany: jest.fn(),
+      createMany: jest.fn(),
+      count: jest.fn()
+    }
+  }
+}))
+
 // Mock environment variables
 process.env.DATABASE_URL = 'file:./test.db'
 process.env.GEMINI_API_KEY = 'test-api-key'
