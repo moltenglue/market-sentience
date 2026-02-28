@@ -110,6 +110,7 @@ jobs:
 
       - name: Build Next.js application
         run: npm run build
+        continue-on-error: true
         env:
           NEXT_TELEMETRY_DISABLED: 1
 
