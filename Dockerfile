@@ -15,7 +15,7 @@
 FROM node:20-alpine AS deps
 
 # Install dependencies for Prisma
-RUN apk add --no-cache libc6-compat openssl
+RUN apk add --no-cache libc6-compat openssl build-base python3
 
 WORKDIR /app
 
@@ -33,7 +33,7 @@ RUN npm install --production && npm cache clean --force
 FROM node:20-alpine AS builder
 
 # Install dependencies for build
-RUN apk add --no-cache libc6-compat openssl
+RUN apk add --no-cache libc6-compat openssl build-base python3
 
 WORKDIR /app
 
