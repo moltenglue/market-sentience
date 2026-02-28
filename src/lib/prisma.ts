@@ -18,7 +18,7 @@ const globalForPrisma = global as unknown as { prisma: PrismaClient }
 const createPrismaClient = () => {
   const dbPath = process.env.DATABASE_URL?.replace('file:', '') || path.join(process.cwd(), 'prisma/data/dev.db')
   const sqlite = new Database(dbPath)
-  const adapter = new PrismaBetterSqlite3(sqlite)
+  const adapter = new PrismaBetterSqlite3(sqlite, { url: `file:${dbPath}` })
   return new PrismaClient({ adapter })
 }
 
